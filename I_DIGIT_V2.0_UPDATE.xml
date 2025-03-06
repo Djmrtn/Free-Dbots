@@ -3199,7 +3199,198 @@
                                                                                           <block type="math_number" id="AF~jP@2VGbbfXDbK-SUs">
                                                                                             <field name="NUM">4</field>
                                                                                           </block>
-                                                                                        </value>
+                                                                                        </value><xml xmlns="http://www.w3.org/1999/xhtml">
+  <variables>
+    <variable id="base_stake">Base Stake</variable>
+    <variable id="max_risk">Max Risk</variable>
+    <variable id="dynamic_multiplier">Dynamic Multiplier</variable>
+    <variable id="win_streak">Win Streak</variable>
+    <variable id="loss_streak">Loss Streak</variable>
+    <variable id="volatility_factor">Volatility Factor</variable>
+  </variables>
+
+  <!-- Market Selection -->
+  <block type="trade" id="main_strategy">
+    <field name="MARKET_LIST">volidx</field>
+    <field name="SYMBOL_LIST">R_100</field>
+    <field name="TRADETYPE_LIST">digits</field>
+
+    <!-- Adaptive Money Management -->
+    <statement name="INITIALIZATION">
+      <block type="variables_set">
+        <field name="VAR" id="base_stake">Base Stake</field>
+        <value name="VALUE">
+          <block type="math_arithmetic">
+            <field name="OP">DIVIDE</field>
+            <value name="A">
+              <block type="account_balance"></block>
+            </value>
+            <value name="B">
+              <block type="math_number">
+                <field name="NUM">200</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <next>
+          <block type="variables_set">
+            <field name="VAR" id="max_risk">Max Risk</field>
+            <value name="VALUE">
+              <block type="math_arithmetic">
+                <field name="OP">MULTIPLY</field>
+                <value name="A">
+                  <block type="variables_get">
+                    <field name="VAR" id="base_stake"></field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="math_number">
+                    <field name="NUM">10</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+
+    <!-- Volatility-Adaptive Entry System -->
+    <statement name="SUBMARKET">
+      <block type="controls_if">
+        <value name="IF0">
+          <block type="logic_operation">
+            <field name="OP">AND</field>
+            <value name="A">
+              <block type="logic_compare">
+                <field name="OP">GT</field>
+                <value name="A">
+                  <block type="market_volatility"></block>
+                </value>
+                <value name="B">
+                  <block type="math_number">
+                    <field name="NUM">15</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <value name="B">
+              <block type="pattern_recognition">
+                <field name="PATTERN_TYPE">double_top</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="tradeOptions">
+            <field name="DURATIONTYPE_LIST">t</field>
+            <value name="AMOUNT">
+              <block type="variables_get">
+                <field name="VAR" id="base_stake"></field>
+              </block>
+            </value>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+
+  <!-- Smart Martingale System -->
+  <block type="after_purchase" id="risk_management">
+    <statement name="AFTERPURCHASE_STACK">
+      <block type="controls_if">
+        <mutation else="1"></mutation>
+        <value name="IF0">
+          <block type="contract_check_result">
+            <field name="CHECK_RESULT">win</field>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="variables_set">
+            <field name="VAR" id="dynamic_multiplier"></field>
+            <value name="VALUE">
+              <block type="math_number">
+                <field name="NUM">1.5</field>
+              </block>
+            </value>
+          </block>
+        </statement>
+        <statement name="ELSE">
+          <block type="variables_set">
+            <field name="VAR" id="dynamic_multiplier"></field>
+            <value name="VALUE">
+              <block type="math_arithmetic">
+                <field name="OP">MULTIPLY</field>
+                <value name="A">
+                  <block type="variables_get">
+                    <field name="VAR" id="dynamic_multiplier"></field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="math_number">
+                    <field name="NUM">1.2</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <next>
+              <block type="controls_if">
+                <value name="IF0">
+                  <block type="logic_compare">
+                    <field name="OP">GTE</field>
+                    <value name="A">
+                      <block type="variables_get">
+                        <field name="VAR" id="loss_streak"></field>
+                      </block>
+                    </value>
+                    <value name="B">
+                      <block type="math_number">
+                        <field name="NUM">3</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="trade_stop"></block>
+                </statement>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+
+  <!-- Machine Learning Integration -->
+  <block type="before_purchase" id="ai_analysis">
+    <statement name="BEFOREPURCHASE_STACK">
+      <block type="ml_predict">
+        <field name="MODEL_TYPE">LSTM</field>
+        <field name="TIMEFRAME">15m</field>
+        <statement name="PREDICTION_ACTION">
+          <block type="tradeOptions">
+            <field name="DIRECTION">CALL</field>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+
+  <!-- Advanced Risk Controls -->
+  <block type="safety_measures" id="safety">
+    <statement name="SAFETY_STACK">
+      <block type="daily_loss_limit">
+        <field name="LIMIT">5</field>
+      </block>
+      <block type="max_consecutive_losses">
+        <field name="MAX_LOSSES">5</field>
+      </block>
+      <block type="volatility_circuit_breaker">
+        <field name="THRESHOLD">25</field>
+      </block>
+    </statement>
+  </block>
+</xml>
                                                                                       </block>
                                                                                     </value>
                                                                                     <value name="ELSE">
